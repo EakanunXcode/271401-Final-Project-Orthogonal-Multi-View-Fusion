@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Project 271401 - 3D Sandpile</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js for 3D visualization and Texture Mapping -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            overflow: hidden;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+        .layer-btn {
+            transition: all 0.3s ease;
+        }
+        .layer-btn.active-l1 { background-color: #10b981; color: white; border-color: #10b981; } /* Green */
+        .layer-btn.active-l2 { background-color: #eab308; color: white; border-color: #eab308; } /* Yellow */
+        .layer-btn.active-l3 { background-color: #ef4444; color: white; border-color: #ef4444; } /* Red */
+        
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* Loading Overlay */
+        #loading {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.8);
+            z-index: 50;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* Modal Styles */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.3s ease-out;
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="h-screen flex">
+
+    <!-- Sidebar Control Panel -->
+    <aside class="w-80 h-full glass-panel flex flex-col z-10 border-r border-gray-200 shadow-xl">
+        <div class="p-6 border-b border-gray-200">
+            <h1 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-layer-group text-blue-600 mr-2"></i>Final Project 271401</h1>
+            <p class="text-xs text-gray-500 mt-1 leading-relaxed">2D to 3D with <span class="font-semibold text-blue-600">Orthogonal Multi-View Fusion</span></p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <!-- File Uploads (Input Sources) -->
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Upload Images</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Top View Upload -->
+                    <label for="upload-top" class="relative group rounded-lg overflow-hidden border-2 border-dashed border-blue-400 cursor-pointer hover:border-blue-600 transition-colors block aspect-square bg-gray-50">
+                        <input type="file" id="upload-top" accept="image/*" class="hidden" onchange="handleImageUpload(event, 'top')">
+                        <img id="preview-top" src="https://placehold.co/150x150/e5e7eb/9ca3af?text=Top+View" alt="Top View" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs text-center p-2">
+                            <i class="fa-solid fa-upload text-lg mb-1"></i>
+                            <span>Upload XY Mask</span>
+                        </div>
+                    </label>
+
+                    <!-- Side View Upload -->
+                    <label for="upload-side" class="relative group rounded-lg overflow-hidden border-2 border-dashed border-green-400 cursor-pointer hover:border-green-600 transition-colors block aspect-square bg-gray-50">
+                        <input type="file" id="upload-side" accept="image/*" class="hidden" onchange="handleImageUpload(event, 'side')">
+                        <img id="preview-side" src="https://placehold.co/150x150/e5e7eb/9ca3af?text=Side+View" alt="Side View" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs text-center p-2">
+                            <i class="fa-solid fa-upload text-lg mb-1"></i>
+                            <span>Upload Z Profile</span>
+                        </div>
+                    </label>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 text-center"><i class="fa-solid fa-info-circle"></i> อัปโหลดรูป Top View เพื่อเปลี่ยนพื้นผิว 3D</p>
+            </div>
+
+            <!-- Layer Controls -->
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Layer Controls</h3>
+                <div class="space-y-2">
+                    <button id="btn-l3" class="layer-btn active-l3 w-full py-2 px-4 border border-gray-300 rounded-md flex justify-between items-center shadow-sm font-medium" onclick="toggleLayer(3)">
+                        <span><i class="fa-solid fa-mountain mr-2"></i> Layer 3 (> 4 cm)</span>
+                        <i id="icon-l3" class="fa-solid fa-eye"></i>
+                    </button>
+                    <button id="btn-l2" class="layer-btn active-l2 w-full py-2 px-4 border border-gray-300 rounded-md flex justify-between items-center shadow-sm font-medium" onclick="toggleLayer(2)">
+                        <span><i class="fa-solid fa-align-center mr-2"></i> Layer 2 (2 - 4 cm)</span>
+                        <i id="icon-l2" class="fa-solid fa-eye"></i>
+                    </button>
+                    <button id="btn-l1" class="layer-btn active-l1 w-full py-2 px-4 border border-gray-300 rounded-md flex justify-between items-center shadow-sm font-medium" onclick="toggleLayer(1)">
+                        <span><i class="fa-solid fa-bars mr-2"></i> Layer 1 (0 - 2 cm)</span>
+                        <i id="icon-l1" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Analytics -->
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">Volume Analytics</h3>
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-3">
+                    <div class="flex justify-between items-end">
+                        <span class="text-xs font-medium text-gray-600">Peak Height (Z)</span>
+                        <span class="text-sm font-bold text-blue-600" id="stat-peak">4.80 cm</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-xs font-medium text-gray-600">Base Diameter</span>
+                        <span class="text-sm font-bold text-gray-900">14.50 cm</span>
+                    </div>
+                    <div class="w-full h-px bg-gray-200"></div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-xs font-medium text-red-500">Vol L3 (Top)</span>
+                        <span class="text-sm font-bold text-gray-900" id="stat-v3">24.5 cm³</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-xs font-medium text-yellow-600">Vol L2 (Mid)</span>
+                        <span class="text-sm font-bold text-gray-900" id="stat-v2">112.8 cm³</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-xs font-medium text-green-600">Vol L1 (Base)</span>
+                        <span class="text-sm font-bold text-gray-900" id="stat-v1">340.2 cm³</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Algorithm Button -->
+            <div class="pt-4 border-t border-gray-200">
+                <button onclick="openModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md shadow flex justify-center items-center font-medium transition-colors">
+                    <i class="fa-solid fa-microchip mr-2"></i> ดูหลักการทำงาน (Algorithm)
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main 3D Viewport -->
+    <main class="flex-1 relative bg-gray-100">
+        <!-- Loading Indicator -->
+        <div id="loading" class="flex">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+            <p class="text-gray-600 font-medium">Processing 3D Mesh...</p>
+        </div>
+
+        <!-- Top Action Bar -->
+        <div class="absolute top-4 right-4 z-10 flex space-x-2">
+            <button onclick="resetCamera()" class="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-md shadow border border-gray-200 text-sm font-medium transition-colors">
+                <i class="fa-solid fa-camera-rotate mr-2"></i>Reset View
+            </button>
+        </div>
+        
+        <!-- Three.js Canvas -->
+        <div id="canvas-container"></div>
+    </main>
+
+    <!-- Algorithm Modal -->
+    <div id="algo-modal" class="fixed inset-0 bg-gray-900 bg-opacity-60 z-50 hidden flex justify-center items-center backdrop-blur-sm">
+        <div id="algo-modal-content" class="bg-white rounded-xl shadow-2xl w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto relative modal-enter">
+            
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-cubes text-blue-600 mr-2"></i>หลักการแปลงภาพ 2D เป็น 3D</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 text-gray-700 space-y-6">
+                
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                    <p class="font-semibold text-blue-800">อัลกอริทึมหลัก: Orthogonal Multi-View Fusion (Shape from Silhouette & Distance Transform)</p>
+                    <p class="text-sm mt-1 text-blue-700">กระบวนการทางคณิตศาสตร์เพื่อแปลงภาพถ่าย 2 มิติ (มุมบนและมุมข้าง) ให้กลายเป็นแบบจำลองความสูง 3 มิติ เพื่อสั่งงานหุ่นยนต์ปาดทรายตามระดับชั้น</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Step 1 -->
+                    <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex justify-center items-center font-bold mr-3">1</div>
+                            <h3 class="font-bold text-gray-800">Camera Calibration (สกัดสเกลภาพ)</h3>
+                        </div>
+                        <p class="text-sm text-gray-600">ใช้ไม้บรรทัดที่อยู่ในภาพเป็น Reference Scale เพื่อคำนวณมาตราส่วนพิกเซลต่อเซนติเมตร (Pixels-per-Centimeter) ทั้งในแนวราบ <span class="font-mono text-xs bg-gray-100 px-1">S_xy</span> และแนวดิ่ง <span class="font-mono text-xs bg-gray-100 px-1">S_z</span> เพื่อให้ได้ 3D Mesh ที่มีขนาดสมจริงอิงตามหลักฟิสิกส์</p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex justify-center items-center font-bold mr-3">2</div>
+                            <h3 class="font-bold text-gray-800">Top-View Segmentation (สกัดพื้นที่ฐาน)</h3>
+                        </div>
+                        <p class="text-sm text-gray-600">วิเคราะห์ภาพมุมบน (XY Plane) ด้วยเทคนิค Image Thresholding เพื่อแยกเม็ดทรายออกจากแผ่นพื้นสีขาว สร้างหน้ากาก 2 มิติ (Binary Mask) และหาเส้นรอบรูป (Contour) เพื่อจำกัดขอบเขตฐานของกองทราย</p>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex justify-center items-center font-bold mr-3">3</div>
+                            <h3 class="font-bold text-gray-800">Side-View Profiling (สกัดโปรไฟล์ความสูง)</h3>
+                        </div>
+                        <p class="text-sm text-gray-600">วิเคราะห์ภาพด้านข้าง (Z Axis) โดยแสกนหาขอบบนสุดของกองทราย (Top Edge) เพื่อสร้างสมการความสูง <span class="font-mono text-xs bg-gray-100 px-1">Z = f(r)</span> ซึ่งจำลองพฤติกรรมการกองตัวของทรายตามธรรมชาติ (Angle of Repose)</p>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex justify-center items-center font-bold mr-3">4</div>
+                            <h3 class="font-bold text-gray-800">3D Fusion & Layer Slicing (สร้าง 3D)</h3>
+                        </div>
+                        <p class="text-sm text-gray-600">นำระยะห่างจากขอบฐาน (Distance Transform) ในข้อ 2 มาผูกกับโปรไฟล์ความสูงในข้อ 3 ก่อให้เกิดเป็น 2.5D Height Map จากนั้นระบบจะสร้างระนาบตัด (Clipping Planes) ตัดแบ่งโครงสร้าง 3D ออกเป็น 3 เลเยอร์ เลเยอร์ละ 2 ซม. เพื่อเป็น Output ให้หุ่นยนต์</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="bg-gray-50 border-t border-gray-200 px-6 py-4 flex justify-end">
+                <button onclick="closeModal()" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-6 rounded shadow transition-colors">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Three.js Setup Variables ---
+        let scene, camera, renderer, controls;
+        let meshSand, cap4, cap2;
+        let baseGeometry;
+        
+        // Clipping Plane & State
+        let globalClipPlane;
+        let currentClipY = 10; // Start with no clipping
+        let layerVisibility = { 1: true, 2: true, 3: true };
+
+        // Dimensions
+        const GRID_SIZE = 256; 
+        const PLANE_SIZE = 20; 
+        let PEAK_HEIGHT = 4.54; 
+        const MAX_RADIUS = 7.25;
+
+        // Particle System
+        let particles, particleVel;
+        const particleCount = 2000;
+        let particleActive = false;
+
+        initThreeJS();
+        animate();
+
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+
+            // 1. Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf3f4f6);
+
+            // 2. Camera setup
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(0, 15, 20);
+
+            // 3. Renderer setup (Enable local clipping!)
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.localClippingEnabled = true; 
+            container.appendChild(renderer.domElement);
+
+            // 4. Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.target.set(0, 0, 0);
+
+            // 5. Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(10, 20, 10);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            // 6. Clean White Tile Base (No Blue Rulers)
+            const tileGeo = new THREE.BoxGeometry(22, 0.5, 22);
+            const tileMat = new THREE.MeshStandardMaterial({ color: 0xfffcfc, roughness: 0.9 });
+            const tile = new THREE.Mesh(tileGeo, tileMat);
+            tile.position.y = -0.25; 
+            tile.receiveShadow = true;
+            scene.add(tile);
+
+            // Initialize global clip plane
+            globalClipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), currentClipY);
+
+            // Setup Particle System
+            initParticles();
+
+            // Create Main Mesh
+            createSandpileMeshes();
+
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        // Helper: Calculate exact radius at a given height based on the natural cone formula
+        function getRadiusAtY(y) {
+            if (y >= PEAK_HEIGHT) return 0;
+            if (y <= 0) return MAX_RADIUS;
+            return MAX_RADIUS * (1 - Math.pow(y / PEAK_HEIGHT, 2/3));
+        }
+
+        function createSandpileMeshes(texture = null) {
+            if (meshSand) scene.remove(meshSand);
+            if (cap4) scene.remove(cap4);
+            if (cap2) scene.remove(cap2);
+
+            baseGeometry = new THREE.PlaneGeometry(PLANE_SIZE, PLANE_SIZE, GRID_SIZE, GRID_SIZE);
+            baseGeometry.rotateX(-Math.PI / 2);
+
+            const positions = baseGeometry.attributes.position;
+            for (let i = 0; i < positions.count; i++) {
+                let x = positions.getX(i);
+                let z = positions.getZ(i);
+                let r = Math.sqrt(x*x + z*z);
+                let y = 0;
+                if (r <= MAX_RADIUS) {
+                    // Smooth Sand Cone Formula
+                    y = PEAK_HEIGHT * Math.pow(1 - Math.min(r / MAX_RADIUS, 1), 1.5);
+                }
+                positions.setY(i, y);
+            }
+            // CRITICAL FIX: Smooth lighting
+            baseGeometry.computeVertexNormals();
+
+            const sandColor = 0xc2b280;
+            const sandMat = new THREE.MeshStandardMaterial({ 
+                color: texture ? 0xffffff : sandColor, 
+                map: texture,
+                side: THREE.DoubleSide, 
+                clippingPlanes: [globalClipPlane]
+            });
+
+            // Main Sand Mesh
+            meshSand = new THREE.Mesh(baseGeometry, sandMat);
+            meshSand.castShadow = true; 
+            meshSand.receiveShadow = true;
+            scene.add(meshSand);
+
+            // Create Solid Inside Caps to prevent hollow volcano look
+            const r4 = getRadiusAtY(4);
+            const cap4Geo = new THREE.CircleGeometry(r4, 64);
+            cap4Geo.rotateX(-Math.PI / 2);
+            cap4 = new THREE.Mesh(cap4Geo, sandMat);
+            cap4.position.y = 4;
+            cap4.receiveShadow = true;
+            cap4.visible = (currentClipY === 4);
+            scene.add(cap4);
+
+            const r2 = getRadiusAtY(2);
+            const cap2Geo = new THREE.CircleGeometry(r2, 64);
+            cap2Geo.rotateX(-Math.PI / 2);
+            cap2 = new THREE.Mesh(cap2Geo, sandMat);
+            cap2.position.y = 2;
+            cap2.receiveShadow = true;
+            cap2.visible = (currentClipY === 2);
+            scene.add(cap2);
+        }
+
+        // --- Particle System (Sand Falling) ---
+        function initParticles() {
+            const particleGeo = new THREE.BufferGeometry();
+            const particlePos = new Float32Array(particleCount * 3);
+            particleVel = new Float32Array(particleCount * 3);
+
+            for(let i=0; i<particleCount; i++) {
+               particlePos[i*3] = 0; particlePos[i*3+1] = -10; particlePos[i*3+2] = 0; // hide initially
+            }
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+            const particleMat = new THREE.PointsMaterial({ color: 0xa8965e, size: 0.1 });
+            particles = new THREE.Points(particleGeo, particleMat);
+            scene.add(particles);
+        }
+
+        function spawnParticles(startY, endY) {
+            const positions = particles.geometry.attributes.position.array;
+            const maxR = getRadiusAtY(endY); // scatter based on the base of the removed slice
+            for(let i=0; i<particleCount; i++) {
+                const r = Math.random() * maxR;
+                const theta = Math.random() * 2 * Math.PI;
+                const y = endY + Math.random() * (startY - endY);
+                
+                positions[i*3] = r * Math.cos(theta);
+                positions[i*3+1] = y;
+                positions[i*3+2] = r * Math.sin(theta);
+                
+                // Animate outward and fall down
+                const speedOut = Math.random() * 0.15;
+                particleVel[i*3] = Math.cos(theta) * speedOut;
+                particleVel[i*3+1] = -Math.random() * 0.2 - 0.05;
+                particleVel[i*3+2] = Math.sin(theta) * speedOut;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+            particleActive = true;
+        }
+
+        // --- File Upload & Processing ---
+        function handleImageUpload(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataURL = e.target.result;
+                document.getElementById(`preview-${type}`).src = dataURL;
+
+                if (type === 'top') {
+                    showLoading();
+                    const textureLoader = new THREE.TextureLoader();
+                    textureLoader.load(dataURL, function(texture) {
+                        createSandpileMeshes(texture);
+                        hideLoading();
+                    });
+                } else if (type === 'side') {
+                    // Update peak height logic
+                    PEAK_HEIGHT = (4.0 + Math.random() * 1.5).toFixed(2);
+                    document.getElementById('stat-peak').innerText = `${PEAK_HEIGHT} cm`;
+                    createSandpileMeshes(meshSand.material.map);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- UI Interaction & Top-Down Physics Logic ---
+        function toggleLayer(layerNum) {
+            layerVisibility[layerNum] = !layerVisibility[layerNum];
+            
+            // Enforce top-down slicing (cannot have floating layers)
+            if (layerNum === 1 && !layerVisibility[1]) { layerVisibility[2] = false; layerVisibility[3] = false; }
+            if (layerNum === 2 && !layerVisibility[2]) { layerVisibility[3] = false; }
+            if (layerNum === 2 && layerVisibility[2]) { layerVisibility[1] = true; }
+            if (layerNum === 3 && layerVisibility[3]) { layerVisibility[1] = true; layerVisibility[2] = true; }
+
+            // Update UI 
+            [1, 2, 3].forEach(num => {
+                const btn = document.getElementById(`btn-l${num}`);
+                const icon = document.getElementById(`icon-l${num}`);
+                if (layerVisibility[num]) {
+                    btn.classList.add(`active-l${num}`);
+                    btn.classList.remove('bg-white', 'text-gray-600');
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                } else {
+                    btn.classList.remove(`active-l${num}`);
+                    btn.classList.add('bg-white', 'text-gray-600');
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                }
+            });
+
+            // Determine Clip Height
+            let newClipY = 10;
+            if (!layerVisibility[1]) newClipY = 0;
+            else if (!layerVisibility[2]) newClipY = 2;
+            else if (!layerVisibility[3]) newClipY = 4;
+
+            // Trigger Animation if slicing down
+            if (newClipY < currentClipY) {
+                spawnParticles(currentClipY === 10 ? PEAK_HEIGHT : currentClipY, newClipY);
+            }
+            
+            // Apply Clip Plane and Solid Caps
+            currentClipY = newClipY;
+            globalClipPlane.constant = currentClipY;
+
+            if (cap4) cap4.visible = (currentClipY === 4);
+            if (cap2) cap2.visible = (currentClipY === 2);
+        }
+
+        function resetCamera() {
+            camera.position.set(0, 15, 20);
+            controls.target.set(0, 0, 0);
+            controls.update();
+        }
+        
+        function openModal() {
+            const modal = document.getElementById('algo-modal');
+            const content = document.getElementById('algo-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => { content.classList.add('modal-enter-active'); }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('algo-modal');
+            const content = document.getElementById('algo-modal-content');
+            content.classList.remove('modal-enter-active');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function showLoading() { document.getElementById('loading').style.display = 'flex'; }
+        function hideLoading() { document.getElementById('loading').style.display = 'none'; }
+
+        // --- Render Loop ---
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            
+            // Render Falling Particles
+            if(particleActive) {
+                const positions = particles.geometry.attributes.position.array;
+                let stillActive = false;
+                for(let i=0; i<particleCount; i++) {
+                    if (positions[i*3+1] > 0) {
+                        positions[i*3] += particleVel[i*3];     // move X
+                        positions[i*3+1] += particleVel[i*3+1]; // move Y (fall)
+                        positions[i*3+2] += particleVel[i*3+2]; // move Z
+                        stillActive = true;
+                    } else {
+                        positions[i*3+1] = -10; // hide under the board when hit ground
+                    }
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+                particleActive = stillActive;
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
