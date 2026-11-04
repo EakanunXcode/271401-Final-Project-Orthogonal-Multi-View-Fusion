@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>271401 Final Project</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#0f172a;--mut:#64748b;--line:#e6e9f0;--ac:#2563eb;--ac2:#06b6d4;--g:#10b981;--y:#f59e0b;--r:#ef4444;--sh:0 1px 2px #0f172a0a,0 12px 32px -12px #0f172a26}
+*{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
+body{background:radial-gradient(1200px 500px at 70% -10%,#e0ecff 0,transparent 60%),var(--bg);color:var(--ink);font-family:'Kanit',sans-serif}
+header{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:14px 36px;background:#ffffffcc;backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:grid;place-items:center;box-shadow:0 8px 20px -6px var(--ac)}
+.brand h1{font-size:21px;font-weight:600;letter-spacing:-.01em}.brand p{font-size:12px;color:var(--mut);margin-top:1px}.brand p b{color:var(--ac);font-weight:500}
+nav a{margin-left:26px;font-size:14px;color:var(--mut);text-decoration:none;transition:.2s}nav a:hover{color:var(--ac)}
+.wrap{max-width:1480px;margin:0 auto;padding:26px 36px 70px}
+.top{display:grid;grid-template-columns:1fr 380px;gap:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--sh)}
+.stage{position:relative;height:calc(100vh - 128px);min-height:560px;overflow:hidden;background:linear-gradient(180deg,#fbfcff 0,#eef2f9 100%)}
+#cv{position:absolute;inset:0}
+.hud{position:absolute;top:16px;left:16px;right:16px;display:flex;justify-content:space-between;z-index:4;pointer-events:none}
+.hud>div{display:flex;gap:8px;pointer-events:auto}
+.pill{background:#fffffff2;border:1px solid var(--line);border-radius:12px;padding:8px 14px;font:400 13px 'Kanit';color:var(--ink);cursor:pointer;box-shadow:0 4px 14px -6px #0f172a30;transition:.2s}
+.pill:hover{border-color:var(--ac);color:var(--ac);transform:translateY(-1px)}.pill.act{background:var(--ac);border-color:var(--ac);color:#fff}
+.slice{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:min(560px,78%);background:#fffffff2;border:1px solid var(--line);border-radius:18px;padding:12px 20px 14px;z-index:4;box-shadow:0 10px 30px -12px #0f172a40}
+.slice .t{display:flex;justify-content:space-between;font-size:12px;color:var(--mut)}.slice .t b{color:var(--ac);font:600 14px 'JetBrains Mono'}
+input[type=range]{width:100%;margin-top:8px;accent-color:var(--ac)}
+.detail{position:absolute;right:18px;bottom:24px;z-index:4;background:#fffffff2;border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-size:11px;color:var(--mut);width:150px}
+.detail input{margin-top:4px}
+#boot{position:absolute;inset:0;z-index:20;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .9s}
+.fr{position:relative;width:250px;height:250px;border-radius:20px;overflow:hidden;box-shadow:var(--sh);border:1px solid var(--line)}
+.fr img{width:100%;height:100%;object-fit:cover}
+.fr::after,.im::after{content:"";position:absolute;left:0;right:0;height:3px;background:var(--ac2);box-shadow:0 0 18px 5px #06b6d488;animation:scan 1.8s ease-in-out infinite}
+@keyframes scan{0%{top:0;opacity:0}12%,88%{opacity:1}50%{top:100%}100%{top:0;opacity:0}}
+#bt{font:500 13px 'JetBrains Mono';color:var(--ac);letter-spacing:.1em}
+.side{display:flex;flex-direction:column;gap:18px}
+.side .card{padding:20px 22px}
+h3{font-size:11px;letter-spacing:.16em;color:var(--mut);font-weight:500;margin-bottom:13px;text-transform:uppercase}
+.imgs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.im{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:1;border:1px solid var(--line)}
+.im img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s}.im:hover img{transform:scale(1.07)}
+.im span{position:absolute;left:8px;bottom:8px;font-size:11px;background:#fffffff0;padding:2px 10px;border-radius:99px;z-index:2}
+.im::after{animation-duration:3.4s}
+.lay{display:block;width:100%;text-align:left;padding:12px 14px;margin-bottom:9px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font:400 14px 'Kanit';color:var(--mut);cursor:pointer;transition:.25s}
+.lay:hover{transform:translateX(3px)}
+.lay .h{display:flex;justify-content:space-between;align-items:center}.lay .h span{display:flex;align-items:center;gap:9px}
+.lay .dot{width:12px;height:12px;border-radius:4px}.lay small{font-size:12px;opacity:.8}
+.lay .v{font:600 13px 'JetBrains Mono';color:var(--ink)}
+.lay .bar{height:5px;border-radius:9px;background:#eef1f6;margin-top:9px;overflow:hidden}.lay .bar i{display:block;height:100%;width:0;transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
+.lay.on{color:var(--ink)}.lay.on.l1{border-color:var(--g);background:#ecfdf5}.lay.on.l2{border-color:var(--y);background:#fffbeb}.lay.on.l3{border-color:var(--r);background:#fef2f2}
+.lay:not(.on){opacity:.5}
+.kp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.k{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.k label{font-size:11px;color:var(--mut)}.k b{display:block;font:600 22px 'JetBrains Mono';margin-top:2px}.k b u{text-decoration:none;font-size:12px;color:var(--mut);margin-left:3px}
+.k.w{grid-column:1/-1;background:linear-gradient(135deg,#eff6ff,#ecfeff);border-color:#cfe0ff}.k.w b{color:var(--ac)}
+/* algorithm */
+.algo{margin-top:70px}
+.eyebrow{display:inline-block;font:500 12px 'JetBrains Mono';letter-spacing:.14em;color:var(--ac);background:#eaf1ff;padding:5px 12px;border-radius:99px}
+.algo h2{font-size:38px;font-weight:600;margin:14px 0 10px;letter-spacing:-.02em}.algo h2 em{font-style:normal;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;color:transparent}
+.lead{max-width:860px;font-size:16px;line-height:1.75;color:#475569}
+.flow{display:flex;gap:10px;margin:28px 0 12px;flex-wrap:wrap}
+.flow div{flex:1;min-width:170px;padding:14px 16px;border-radius:16px;background:#fff;border:1px solid var(--line);font-size:13px;color:var(--mut);position:relative;box-shadow:var(--sh)}
+.flow div b{display:block;color:var(--ink);font-size:15px;font-weight:500}
+.flow div:not(:last-child)::after{content:"→";position:absolute;right:-17px;top:50%;transform:translateY(-50%);color:var(--ac);font-size:18px;z-index:2}
+.step{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center;margin-top:44px;opacity:0;transform:translateY(34px);transition:all .9s cubic-bezier(.2,.8,.2,1)}
+.step.in{opacity:1;transform:none}.step:nth-of-type(even) .txt{order:2}
+.num{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;display:grid;place-items:center;font:600 20px 'JetBrains Mono';box-shadow:0 10px 24px -8px var(--ac)}
+.step h4{font-size:24px;font-weight:500;margin:14px 0 8px}.step p{font-size:15px;line-height:1.75;color:#475569}
+.step code,.fm{font:500 13px 'JetBrains Mono';background:#f1f5f9;border:1px solid var(--line);border-radius:8px;padding:2px 8px;color:#1d4ed8}
+.fm{display:block;margin-top:12px;padding:10px 14px;border-radius:12px}
+.vis{padding:14px;position:relative;overflow:hidden}.vis canvas,.vis svg,.vis img{width:100%;display:block;border-radius:12px}
+.vis .tag{position:absolute;top:22px;left:24px;font:500 11px 'JetBrains Mono';background:#fffffff0;border:1px solid var(--line);padding:3px 10px;border-radius:99px}
+.pulse{position:absolute;inset:14px;width:calc(100% - 28px)!important;animation:pl 2.4s ease-in-out infinite}@keyframes pl{50%{opacity:.15}}
+.third{margin-top:60px;padding:30px 34px;display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
+.third h4{font-size:24px;font-weight:500;margin-bottom:8px}
+.bands{display:flex;flex-direction:column-reverse;height:220px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.bands div{flex:1;display:flex;justify-content:space-between;align-items:center;padding:0 18px;font:500 13px 'JetBrains Mono';color:#fff}
+.diag{margin-top:34px;padding:14px}.diag img{width:100%;border-radius:14px;display:block}
+footer{margin-top:50px;text-align:center;font-size:13px;color:var(--mut)}
+@media(max-width:1100px){.top,.step,.third{grid-template-columns:1fr}.stage{height:70vh}.step:nth-of-type(even) .txt{order:0}.wrap{padding:18px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><path d="M12 3 3 8l9 5 9-5-9-5z"/><path d="m3 13 9 5 9-5"/></svg></div>
+    <div><h1>271401 Final Project</h1><p>2D to 3D Sandpile · <b>Orthogonal Multi-View Fusion</b></p></div></div>
+  <nav><a href="#viewer">3D Viewer</a><a href="#algo">Algorithm</a></nav>
+</header>
+<div class="wrap">
+<section class="top" id="viewer">
+  <div class="card stage">
+    <div id="cv"></div>
+    <div class="hud"><div><button class="pill" onclick="view('iso')">3D</button><button class="pill" onclick="view('top')">Top</button><button class="pill" onclick="view('side')">Side</button></div>
+      <div><button class="pill" id="bRot" onclick="toggleRot()">Auto-rotate</button><button class="pill" id="bMode" onclick="toggleMode()">Layer colors</button><button class="pill" onclick="replay()">▶ Replay</button></div></div>
+    <div class="detail">Grain detail<input id="bump" type="range" min="0" max="6" step=".1" value="2.2"></div>
+    <div class="slice"><div class="t"><span>SLICE HEIGHT</span><b id="sv">0.00 cm</b></div><input id="sl" type="range" min="0" max="1" step="0.01" value="1"></div>
+    <div id="boot"><div class="fr"><img id="iBoot"></div><div id="bt">SCANNING TOP VIEW...</div></div>
+  </div>
+  <div class="side">
+    <div class="card"><h3>Input images</h3><div class="imgs"><div class="im"><img id="iTop"><span>Top View · XY</span></div><div class="im"><img id="iSide"><span>Side View · Z</span></div></div></div>
+    <div class="card"><h3>Layers · แบ่งความสูง 3 ส่วนเท่ากัน</h3><div id="layers"></div></div>
+    <div class="card"><h3>Analytics</h3><div class="kp">
+      <div class="k"><label>Peak Height</label><b data-n="H" data-d="2">0<u>cm</u></b></div><div class="k"><label>Base Diameter</label><b data-n="D" data-d="2">0<u>cm</u></b></div>
+      <div class="k"><label>Angle of Repose</label><b data-n="angle" data-d="1">0<u>°</u></b></div><div class="k"><label>Layer Thickness</label><b data-n="th" data-d="2">0<u>cm</u></b></div>
+      <div class="k w"><label>Total Volume</label><b data-n="tot" data-d="1">0<u>cm³</u></b></div></div></div>
+  </div>
+</section>
+
+<section class="algo" id="algo">
+  <span class="eyebrow">ALGORITHM</span>
+  <h2>จากภาพถ่าย 2 ภาพ สู่โมเดล <em>3 มิติ</em></h2>
+  <p class="lead"><b>Orthogonal Multi-View Fusion</b> (Shape from Silhouette &amp; Distance Transform) ใช้ภาพมุมบนบอก "ขอบเขตฐาน" และภาพมุมข้างบอก "ความชัน" แล้วนำมารวมกันเป็นแผนที่ความสูง จากนั้นแบ่งเป็น 3 ชั้นสูงเท่ากันเพื่อสั่งงานหุ่นยนต์ปาดทรายตามระดับชั้น พื้นผิวสีของโมเดลใช้ภาพถ่ายจริงที่อัปโหลดเข้ามา</p>
+  <div class="flow"><div><b>Top + Side</b>ภาพถ่าย 2 มุม</div><div><b>Calibrate</b>px → cm</div><div><b>Segment</b>mask ฐาน</div><div><b>Profile</b>โปรไฟล์ความสูง</div><div><b>Fuse</b>z(x,y) + 3 ชั้น</div></div>
+
+  <div class="step"><div class="txt"><div class="num">1</div><h4>Camera Calibration · สกัดสเกลภาพ</h4><p>ใช้ไม้บรรทัดอ้างอิงในภาพคำนวณจำนวนพิกเซลต่อเซนติเมตร จากนั้นใช้ความกว้างฐานที่เท่ากันของทั้ง 2 มุมกล้องปรับสเกลภาพด้านข้างให้สอดคล้องกัน ทำให้ได้ขนาดจริงตามหลักฟิสิกส์</p><span class="fm">px_per_cm = distance_px(ruler) / distance_cm</span></div>
+    <div class="card vis"><span class="tag">TOP VIEW + SCALE</span><canvas id="c1"></canvas></div></div>
+  <div class="step"><div class="txt"><div class="num">2</div><h4>Top-View Segmentation · สกัดพื้นที่ฐาน</h4><p>แยกกองทรายออกจากแผ่นพื้นด้วย <b>สีน้ำตาลของทราย</b> (Lab chroma + Otsu threshold) แล้วใช้ Morphology ตัดเม็ดทรายกระเด็นและไม้บรรทัดออก ได้หน้ากาก 2 มิติ (Binary Mask) และเส้นรอบรูปของฐาน</p><span class="fm">mask = Otsu(chroma(Lab)) ∘ Open ∘ Close</span></div>
+    <div class="card vis"><span class="tag">BINARY MASK</span><canvas id="c2"></canvas><canvas id="c2b" class="pulse"></canvas></div></div>
+  <div class="step"><div class="txt"><div class="num">3</div><h4>Side-View Profiling · สกัดโปรไฟล์ความสูง</h4><p>สแกนขอบบนของ silhouette ในภาพด้านข้าง พับครึ่งซ้าย-ขวาให้เป็นเส้นเดียว <code>P(d)</code> โดย d คือระยะจากขอบฐาน และบังคับให้ความสูงไม่ลดลงเมื่อเข้าใกล้ยอด ตามพฤติกรรมการกองตัวของทราย (Angle of Repose)</p><span class="fm">P(d) = max<sub>d'≤d</sub> h(d')  ·  θ = atan(H / R)</span></div>
+    <div class="card vis"><span class="tag">SIDE PROFILE P(d)</span><svg id="svg3" viewBox="0 0 420 270"></svg></div></div>
+  <div class="step"><div class="txt"><div class="num">4</div><h4>3D Fusion &amp; Layer Slicing · สร้าง 3 มิติ</h4><p>คำนวณ Distance Transform ของ mask ฐาน แล้วนำไปอ่านค่าความสูงจากโปรไฟล์ในข้อ 3 ได้แผนที่ความสูง <code>z(x,y)</code> ที่ตามรูปทรงฐานจริง จากนั้นเติมความขรุขระระดับเม็ดทรายจากภาพถ่าย และตัดความสูงเป็น 3 ชั้นเท่ากัน</p><span class="fm">z(x,y) = H · g( EDT(mask) / max EDT )</span></div>
+    <div class="card vis"><span class="tag">HEIGHT MAP · 3 LAYERS</span><canvas id="c4"></canvas></div></div>
+
+  <div class="card third"><div><h4>ทำไมแบ่งเป็น 3 ส่วน "เท่ากัน"</h4><p style="font-size:15px;line-height:1.75;color:#475569">ทุกชั้นหนาเท่ากัน <b id="thk"></b> ทำให้หุ่นยนต์ตั้งระยะปาดซ้ำได้เท่ากันทุกรอบ ปริมาตรของแต่ละชั้นคือการอินทิเกรตความสูงที่ถูกตัดอยู่ในช่วงชั้นนั้น</p><span class="fm">h<sub>k</sub> = k·H/3   ·   V<sub>k</sub> = ∬ [ clip(z, h<sub>k-1</sub>, h<sub>k</sub>) − h<sub>k-1</sub> ] dA</span></div>
+    <div class="bands" id="bands"></div></div>
+  <div class="card diag"><h3 style="margin:6px 6px 12px">Pipeline output · ผลการประมวลผลจริง</h3><img id="iDiag"></div>
+  <footer>271401 Final Project · Orthogonal Multi-View Fusion</footer>
+</section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const DATA = /*DATA*/null;
+const {H,D,angle,bounds:B,vols,N,side_cm:S,z:Zd}=DATA;const $=id=>document.getElementById(id);
+const tot=vols[0]+vols[1]+vols[2];const stats={H,D,angle,th:H/3,tot};
+["iTop","iBoot"].forEach(i=>$(i).src=DATA.top_img);$("iSide").src=DATA.side_img;$("iDiag").src=DATA.diag_img;$("thk").textContent=(H/3).toFixed(2)+" cm";
+const COL=[[16,185,129],[245,158,11],[239,68,68]],HEX=["#10b981","#f59e0b","#ef4444"];
+const f2=v=>v.toFixed(2);
+
+// ---------------- renderer ----------------
+const wrap=$("cv"),scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(38,1,.1,400);
+const ren=new THREE.WebGLRenderer({antialias:true,alpha:true});
+ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.outputEncoding=THREE.sRGBEncoding;ren.toneMapping=THREE.ACESFilmicToneMapping;ren.toneMappingExposure=1.08;
+ren.shadowMap.enabled=true;ren.shadowMap.type=THREE.PCFSoftShadowMap;wrap.appendChild(ren.domElement);
+const ctl=new THREE.OrbitControls(cam,ren.domElement);ctl.enableDamping=true;ctl.dampingFactor=.07;ctl.maxPolarAngle=Math.PI*.49;ctl.enablePan=false;ctl.minDistance=S*.35;ctl.maxDistance=S*3;ctl.autoRotateSpeed=1.2;
+const HOME={iso:[S*.55,S*.62,S*.85],top:[0,S*1.7,.001],side:[0,H*.55,S*1.5]};
+let camGoal=null;function view(n){camGoal=new THREE.Vector3(...HOME[n]);ctl.target.set(0,n==="side"?H*.4:H*.2,0)}
+cam.position.set(...HOME.iso);ctl.target.set(0,H*.2,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0xdde3ee,.75));
+const sun=new THREE.DirectionalLight(0xfff1dc,1.15);sun.position.set(S*.75,S*.95,S*.55);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-S*.8,right:S*.8,top:S*.8,bottom:-S*.8,near:.1,far:S*4});sun.shadow.bias=-.0006;sun.shadow.normalBias=.03;sun.shadow.radius=5;scene.add(sun);
+const fill=new THREE.DirectionalLight(0xcfe0ff,.35);fill.position.set(-S,S*.5,-S*.6);scene.add(fill);
+
+// clean white board with cm grid
+function gridTex(){const c=document.createElement("canvas");c.width=c.height=2048;const g=c.getContext("2d");g.fillStyle="#f7f8fa";g.fillRect(0,0,2048,2048);
+  const cm=2048/S;for(let i=0;i<=S;i++){g.strokeStyle=i%5?"#e4e8ee":"#c3cad6";g.lineWidth=i%5?1.2:2.4;g.beginPath();g.moveTo(i*cm,0);g.lineTo(i*cm,2048);g.moveTo(0,i*cm);g.lineTo(2048,i*cm);g.stroke()}
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t}
+const board=new THREE.Mesh(new THREE.BoxGeometry(S,.8,S),[0,1,2,3,4,5].map(i=>new THREE.MeshStandardMaterial(i===2?{map:gridTex(),roughness:.92}:{color:0xffffff,roughness:.8})));
+board.position.y=-.4;board.receiveShadow=true;scene.add(board);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(S*8,S*8),new THREE.MeshStandardMaterial({color:0xeef1f6,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.8;floor.receiveShadow=true;scene.add(floor);
+
+// pile: photo texture masked by silhouette + bump from the photo itself
+const geo=new THREE.PlaneGeometry(S,S,N-1,N-1);geo.rotateX(-Math.PI/2);const pos=geo.attributes.position;
+geo.setAttribute("color",new THREE.BufferAttribute(new Float32Array(pos.count*3),3));
+const matPhoto=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,metalness:0,alphaTest:.5,bumpScale:2.2});
+const matLayer=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85});
+const mesh=new THREE.Mesh(geo,matPhoto);mesh.castShadow=mesh.receiveShadow=true;mesh.visible=false;scene.add(mesh);
+function loadImg(src){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=src})}
+Promise.all([loadImg(DATA.tex),loadImg(DATA.mask)]).then(([a,m])=>{
+  const W=a.width,c=document.createElement("canvas");c.width=c.height=W;const g=c.getContext("2d");g.drawImage(a,0,0,W,W);
+  const mc=document.createElement("canvas");mc.width=mc.height=W;const mg=mc.getContext("2d");try{mg.filter="blur(2px)"}catch(e){}mg.drawImage(m,0,0,W,W);
+  const id=g.getImageData(0,0,W,W),md=mg.getImageData(0,0,W,W).data;for(let i=0;i<W*W;i++)id.data[i*4+3]=md[i*4];g.putImageData(id,0,0);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=ren.capabilities.getMaxAnisotropy();
+  matPhoto.map=t;matPhoto.bumpMap=t;matPhoto.needsUpdate=true;mesh.visible=true;
+  mesh.customDepthMaterial=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:t,alphaTest:.5});
+  // algorithm visuals use the same photo / mask
+  drawAlgo(a,m)});
+$("bump").oninput=e=>{matPhoto.bumpScale=+e.target.value};
+
+// ---------------- state ----------------
+let k=0,lim=H,target=H,mode="photo",vis=[true,true,true],buildT=-1;
+function rebuild(){const col=geo.attributes.color;
+  for(let i=0;i<pos.count;i++){const z=Math.min(Zd[i],lim);pos.setY(i,z*k);
+    const ao=.72+.28*Math.pow(Math.min(1,Zd[i]/H),.6);               // cheap ambient occlusion: valleys darker
+    if(mode==="layer"){const c=z<=.02?[.93,.94,.96]:COL[z<=B[1]+1e-4?0:z<=B[2]+1e-4?1:2].map(v=>v/255);col.setXYZ(i,c[0]*ao,c[1]*ao,c[2]*ao)}else col.setXYZ(i,ao,ao,ao)}
+  pos.needsUpdate=true;col.needsUpdate=true;geo.computeVertexNormals()}
+const PN=1800,pg=new THREE.BufferGeometry(),pp=new Float32Array(PN*3).fill(-50),pv=new Float32Array(PN*3);pg.setAttribute("position",new THREE.BufferAttribute(pp,3));
+scene.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xb48a4a,size:.1,transparent:true,opacity:.9})));let pAct=false;
+function burst(y0,y1){const R=D/2;for(let i=0;i<PN;i++){const r=Math.sqrt(Math.random())*R*(1-y1/H*.75),t=Math.random()*6.283,y=y1+Math.random()*(y0-y1),s=Math.random()*.1;
+  pp[i*3]=r*Math.cos(t);pp[i*3+1]=y;pp[i*3+2]=r*Math.sin(t);pv[i*3]=Math.cos(t)*s;pv[i*3+1]=-Math.random()*.16-.04;pv[i*3+2]=Math.sin(t)*s}pAct=true}
+function setTarget(t){if(t<target-1e-3)burst(target,t);target=t;$("sl").value=t/H;$("sv").textContent=f2(t)+" cm"}
+function tick(now){requestAnimationFrame(tick);
+  if(buildT>=0){const p=Math.min((now-buildT)/3000,1);k=1-Math.pow(1-p,3);if(p>=1)buildT=-1;rebuild()}else if(Math.abs(lim-target)>.003){lim+=(target-lim)*.12;rebuild()}
+  if(pAct){let a=false;for(let i=0;i<PN;i++){if(pp[i*3+1]>0){pp[i*3]+=pv[i*3];pp[i*3+1]+=pv[i*3+1];pp[i*3+2]+=pv[i*3+2];a=true}else pp[i*3+1]=-50}pg.attributes.position.needsUpdate=true;pAct=a}
+  if(camGoal){cam.position.lerp(camGoal,.07);if(cam.position.distanceTo(camGoal)<.02)camGoal=null}
+  ctl.update();ren.render(scene,cam)}
+function resize(){const w=wrap.clientWidth,h=wrap.clientHeight;ren.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()}
+addEventListener("resize",resize);resize();requestAnimationFrame(tick);
+
+// ---------------- UI ----------------
+const nm=[`0 – ${f2(B[1])} cm`,`${f2(B[1])} – ${f2(B[2])} cm`,`${f2(B[2])} – ${f2(H)} cm`];
+$("layers").innerHTML=[2,1,0].map(i=>`<button class="lay l${i+1} on" id="L${i}" onclick="toggleLayer(${i})"><div class="h"><span><i class="dot" style="background:${HEX[i]}"></i>Layer ${i+1} <small>${nm[i]}</small></span><b class="v">${vols[i].toFixed(1)} cm³</b></div><div class="bar"><i id="b${i}" style="background:${HEX[i]}"></i></div></button>`).join("");
+function sync(){vis.forEach((v,j)=>$("L"+j).classList.toggle("on",v))}
+function toggleLayer(i){vis[i]=!vis[i];if(i===0&&!vis[0])vis=[false,false,false];if(i===1&&!vis[1])vis[2]=false;if(i===1&&vis[1])vis[0]=true;if(i===2&&vis[2])vis=[true,true,true];sync();setTarget(!vis[0]?0:!vis[1]?B[1]:!vis[2]?B[2]:H)}
+$("sl").oninput=e=>{target=lim=+e.target.value*H;$("sv").textContent=f2(target)+" cm";rebuild();vis=[target>.01,target>B[1]+.01,target>B[2]+.01];sync()};
+function toggleMode(){mode=mode==="photo"?"layer":"photo";mesh.material=mode==="photo"?matPhoto:matLayer;$("bMode").classList.toggle("act",mode==="layer");$("bMode").textContent=mode==="photo"?"Layer colors":"Photo texture";rebuild()}
+function toggleRot(){ctl.autoRotate=!ctl.autoRotate;$("bRot").classList.toggle("act",ctl.autoRotate)}
+function countUp(){document.querySelectorAll("[data-n]").forEach(el=>{const v=stats[el.dataset.n],d=+el.dataset.d,u=el.querySelector("u").outerHTML,t0=performance.now();
+  (function f(n){const p=Math.min((n-t0)/1800,1),e=1-Math.pow(1-p,3);el.innerHTML=(v*e).toFixed(d)+u;if(p<1)requestAnimationFrame(f)})(t0)});
+  [0,1,2].forEach(i=>setTimeout(()=>$("b"+i).style.width=(vols[i]/tot*100)+"%",150))}
+function replay(){[0,1,2].forEach(i=>$("b"+i).style.width="0");vis=[true,true,true];sync();lim=target=H;$("sl").value=1;$("sv").textContent=f2(H)+" cm";k=0;buildT=performance.now();countUp()}
+["SCANNING TOP VIEW...","EXTRACTING SILHOUETTE...","PROFILING SIDE VIEW...","FUSING DISTANCE TRANSFORM...","BUILDING 3D MESH..."].forEach((m,i)=>setTimeout(()=>$("bt").textContent=m,i*520));
+setTimeout(()=>{$("boot").style.opacity=0;setTimeout(()=>$("boot").remove(),900);$("sv").textContent=f2(H)+" cm";buildT=performance.now();countUp()},2700);
+
+// ---------------- algorithm visuals ----------------
+function drawAlgo(photo,mask){
+  const c1=$("c1"),W=900;c1.width=W;c1.height=W*photo.height/photo.width;let g=c1.getContext("2d");
+  const top=new Image();top.onload=()=>{g.drawImage(top,0,0,W,c1.height);const pxcm=DATA.px_cm*W/DATA.top_w,y=c1.height-40,x0=36;
+    g.fillStyle="#fffffff0";g.fillRect(x0-14,y-34,pxcm*5+28,64);g.strokeStyle="#2563eb";g.lineWidth=4;g.beginPath();g.moveTo(x0,y);g.lineTo(x0+pxcm*5,y);g.moveTo(x0,y-10);g.lineTo(x0,y+10);g.moveTo(x0+pxcm*5,y-10);g.lineTo(x0+pxcm*5,y+10);g.stroke();
+    g.fillStyle="#1d4ed8";g.font="600 22px JetBrains Mono";g.fillText("5 cm = "+Math.round(pxcm*5/W*DATA.top_w)+" px",x0,y-14)};top.src=DATA.top_img;
+  [["c2",1],["c2b",0]].forEach(([id,base])=>{const c=$(id);c.width=c.height=700;const x=c.getContext("2d");if(base){x.drawImage(photo,0,0,700,700)}
+    else{x.drawImage(mask,0,0,700,700);const d=x.getImageData(0,0,700,700);for(let i=0;i<d.data.length;i+=4){const v=d.data[i]>128;d.data[i]=37;d.data[i+1]=99;d.data[i+2]=235;d.data[i+3]=v?150:0}x.putImageData(d,0,0)}});
+  // profile chart
+  const pd=DATA.prof_d,pz=DATA.prof_p,X=d=>46+d/pd[pd.length-1]*350,Y=h=>230-h/H*190;
+  let s=`<rect x="46" y="${Y(H)}" width="350" height="${Y(B[2])-Y(H)}" fill="#ef444418"/><rect x="46" y="${Y(B[2])}" width="350" height="${Y(B[1])-Y(B[2])}" fill="#f59e0b18"/><rect x="46" y="${Y(B[1])}" width="350" height="${Y(0)-Y(B[1])}" fill="#10b98118"/>`;
+  [B[1],B[2]].forEach(h=>s+=`<line x1="46" x2="396" y1="${Y(h)}" y2="${Y(h)}" stroke="#94a3b8" stroke-dasharray="4 4"/><text x="400" y="${Y(h)+4}" font-size="10" fill="#64748b" font-family="JetBrains Mono">${f2(h)}</text>`);
+  s+=`<line x1="46" y1="230" x2="396" y2="230" stroke="#94a3b8"/><line x1="46" y1="40" x2="46" y2="230" stroke="#94a3b8"/>`;
+  s+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(pd[pd.length-1])}" y2="${Y(H)}" stroke="#94a3b8" stroke-dasharray="6 5"/>`;
+  s+=`<polyline id="prof" fill="none" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" points="${pd.map((d,i)=>X(d)+","+Y(pz[i])).join(" ")}"/>`;
+  s+=`<text x="46" y="252" font-size="11" fill="#64748b" font-family="JetBrains Mono">distance from base edge d (cm)</text><text x="4" y="30" font-size="11" fill="#64748b" font-family="JetBrains Mono">height (cm)</text><text x="300" y="${Y(H*.12)}" font-size="11" fill="#2563eb" font-family="JetBrains Mono">θ ≈ ${angle.toFixed(1)}°</text>`;
+  $("svg3").innerHTML=s;
+  // height map
+  const c4=$("c4");c4.width=c4.height=N;const x4=c4.getContext("2d"),im=x4.createImageData(N,N);
+  for(let i=0;i<N*N;i++){const z=Zd[i];let c=[246,248,251];if(z>.02){c=COL[z<=B[1]?0:z<=B[2]?1:2];const sh=.62+.38*z/H;c=c.map(v=>v*sh+(1-sh)*255*.2)}im.data.set([...c,255],i*4)}
+  x4.putImageData(im,0,0);c4.style.imageRendering="auto";
+  $("bands").innerHTML=[2,1,0].map(i=>`<div style="background:${HEX[i]}"><span>Layer ${i+1}</span><span>${nm[i]} · ${vols[i].toFixed(1)} cm³</span></div>`).join("")}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");const p=e.target.querySelector("#prof");if(p){p.style.transition="stroke-dashoffset 2.2s ease";p.style.strokeDashoffset=0}}}),{threshold:.25});
+document.querySelectorAll(".step").forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
